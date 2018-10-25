@@ -145,13 +145,17 @@ dot syntax on functions to support a fluent style of arrow composition
     }
   });
 
+  function xHasError(x) {
+    return (x instanceof Error) || (x.first && x.first instanceof Error) || (x.second && x.second instanceof Error);
+  }
+
   Object.defineProperty(Function.prototype, 'leftError', {
     get: function () {
       if (!this._leftError) {
         let f = this.a;
         this._leftError = (x, cont, p) => {
           return f(x, (x, p) => {
-            return cont((x instanceof Error) ? lifta.Left(x) : lifta.Right(x), p);
+            return cont(xHasError(x) ? lifta.Left(x) : lifta.Right(x), p);
           }, p);
         };
       }

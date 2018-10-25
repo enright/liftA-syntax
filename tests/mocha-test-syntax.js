@@ -418,7 +418,7 @@ describe('leftError', () => {
       expect(x.x).to.be.instanceof(Error);
     }, lifta.P());
   });
-  it('if x is not Error produces Left(x)', () => {
+  it('if x is not Error (and not a tuple) produces Right(x)', () => {
     let fFunction = (x) => {
       return {
         didithurt: 'no'
@@ -428,6 +428,39 @@ describe('leftError', () => {
     arrow(undefined, (x) => {
       expect(x).to.be.instanceof(lifta.Right);
       expect(x.x).to.have.property('didithurt').equal('no');
+    }, lifta.P());
+  });
+  it('if x.first is Error produces Left(x)', () => {
+    let fFunction = (x) => {
+      return [Error('ouch'), 'fish'];
+    };
+    let arrow = fFunction.leftError;
+    arrow(undefined, (x) => {
+      expect(x).to.be.instanceof(lifta.Left);
+      expect(x.x.first).to.be.instanceof(Error);
+      expect(x.x.second).equal('fish');
+    }, lifta.P());
+  });
+  it('if x.second is Error produces Left(x)', () => {
+    let fFunction = (x) => {
+      return ['butter', Error('ouch')];
+    };
+    let arrow = fFunction.leftError;
+    arrow(undefined, (x) => {
+      expect(x).to.be.instanceof(lifta.Left);
+      expect(x.x.second).to.be.instanceof(Error);
+      expect(x.x.first).equal('butter');
+    }, lifta.P());
+  });
+  it('if x.first is not Error and x.second is not Error produces Right(x)', () => {
+    let fFunction = (x) => {
+      return [undefined, 'knockwurst'];
+    };
+    let arrow = fFunction.leftError;
+    arrow(undefined, (x) => {
+      expect(x).to.be.instanceof(lifta.Right);
+      expect(x.x.first).equal(undefined);
+      expect(x.x.second).equal('knockwurst');
     }, lifta.P());
   });
 });

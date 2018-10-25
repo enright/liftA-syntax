@@ -1,6 +1,6 @@
 {
   "name": "lifta-syntax",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Dot syntax for fluent construction of arrows",
   "main": "liftA-syntax.js",
   "jshintConfig": {
@@ -29,7 +29,7 @@
   },
   "homepage": "https://github.com/enright/lifta-syntax#readme",
   "dependencies": {
-    "lifta": "0.0.19"
+    "lifta": "0.0.20"
   },
   "devDependencies": {
     "chai": "^4.1.2",
