@@ -82,8 +82,13 @@ We start running an arrow with a _tuple_. A general practice is to use the secon
 ## Boolean Combinators
 
 + .and(a) - _b.and(a)_ logical and of b.first and a.first, b.second is preserved
+
 + .or(a) - _b.or(a)_ logical or of b.first and a.first, b.second is preserved
+
 + .not - _b.not_ logical not of b.first, b.second is preserved
+
 + .true(a) - _b.true(a)_ if b produces first === true, run a, otherwise nothing
+
 + .false(a) - _b.false(a)_ if b produces first === false, run a, otherwise nothing
+
 + .falseError - _b.falseError_ if b produces first === false then produce an Error
