@@ -1,5 +1,3 @@
-![lifta image](https://s3-us-west-1.amazonaws.com/bill-enright-personal/Asset+5.svg)
-
 # lifta-syntax
 
 There are a number of packages/repos related to liftA. This repository provides the fluent syntax  that I believe improves clarity when constructing asynchronous arrows. To accomplish this, it adds a significant number of properties and functions to Function.prototype.
@@ -79,16 +77,11 @@ We start running an arrow with a _tuple_. A general practice is to use the secon
 
 .run - _b.run(t)_ run an arrow with initial tuple [first, second]
 
-##Boolean Combinators
+## Boolean Combinators
 
-.and(a) - _b.and(a)_ logical and of b.first and a.first, b.second is preserved
-
-.or(a) - _b.or(a)_ logical or of b.first and a.first, b.second is preserved
-
-.not - _b.not_ logical not of b.first, b.second is preserved
-
-.true(a) - _b.true(a)_ if b produces first === true, run a, otherwise nothing
-
-.false(a) - _b.false(a)_ if b produces first === false, run a, otherwise nothing
-
-.falseError - _b.falseError_ if b produces first === false then produce an Error
++ .and(a) - _b.and(a)_ logical and of b.first and a.first, b.second is preserved
++ .or(a) - _b.or(a)_ logical or of b.first and a.first, b.second is preserved
++ .not - _b.not_ logical not of b.first, b.second is preserved
++ .true(a) - _b.true(a)_ if b produces first === true, run a, otherwise nothing
++ .false(a) - _b.false(a)_ if b produces first === false, run a, otherwise nothing
++ .falseError - _b.falseError_ if b produces first === false then produce an Error
