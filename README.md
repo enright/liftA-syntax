@@ -67,7 +67,7 @@ We start running an arrow with a _tuple_. A general practice is to use the secon
 
 + .either(a) - _b.either(a)_ similar to fan, but when first of the arrows completes, the other is cancelled
 
-+ .repeat - _b.repeat_ repeat the arrow b until lifta.Done is produced
++ .repeat - _b.repeat_ repeat the arrow b as long as b produces lifta.Repeat. Continue without repeating when lifta.Done is produced
 
 + .lor - _b.lor(a, c)_ if b produces lifta.Left, a runs. if b produces lifta.Right, c runs
 
