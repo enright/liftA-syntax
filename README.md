@@ -69,13 +69,13 @@ In the discussion below, b represents an arrow. The properties and functions of 
 
 + .either(a) - _b.either(a)_ similar to fan in that it runs b on t1 and a on t1, but when first of the arrows completes, the other is cancelled. Produces either t2[b(t1).first, b(t1).second] or t2[a(t1).first, a(t1).second]. Because only one arrow completes, you are unlikely to want to reduce.
 
-+ .repeat - _b.repeat_ repeat the arrow b as long as b produces lifta.Repeat. Continue without repeating when lifta.Done is produced
++ .repeat - _b.repeat_ repeat the arrow b as long as b produces lifta.Repeat(tn). Continue without repeating when lifta.Done(tn) is produced. Loop forever with _b.then(lifta.justRepeatA).repeat_. But if you want your loop to finish, your arrow must produce lifta.Done(tn), which will cause repeat to end and produce tn.
 
-+ .lor - _b.lor(a, c)_ lor is short for "left or right", which provides branching. if b produces lifta.Left, run a on b(t1). If b produces lifta.Right, run c on b(t1)
++ .lor - _b.lor(a, c)_ lor is short for "left or right", which provides branching. if b(t1) produces lifta.Left(t2), run a on t2. If b produces lifta.Right(t2), run c on t2. To branch for error handling, you can simply have your arrow produce an Error and use the _.leftError_ property. Suppose b might produce an Error: _b.leftError.lor(errorHandlerA, normalResultA)_. The Error here will still be produced by this arrow after error handling. When constructing it is typical to cope with Error flowing to downstream arrows by using the _.barrier_ property, which prevents arrows from executing if t is an Error.
 
-+ .leftError - _b.leftError_ if b produces Error, then produce lifta.Left
++ .leftError - _b.leftError_ if b(t1) produces t2 that either is an Error or contains an error (t2.first is Error or t2.second is Error), then produce lifta.Left(t2)
 
-+ .barrier - _b.barrier_ if initial input t1 is an Error, then do not execute b
++ .barrier - _b.barrier_ if initial input t1 is or contains an Error, then do not execute b, simply produce t1
 
 ## Run
 
