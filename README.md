@@ -53,7 +53,7 @@ Combining functions (like setUserReqParams) and arrows (like dyna.getItemA) into
 
 We start running an arrow with a _tuple_. A general practice is to use the second of the tuple as contextual information for the arrow and let the context flow through the computation, typically adding to the context, sometimes modifying it. See lifta-thumbnail for examples from a working web service.
 
-In the discussion below, b represents an arrow. The properties and functions of b construct a new arrow (such that b.first is a new arrow, it is not b). 'a' and 'c' represent arrows that are passed as parameters to functions such as _b.then(a)_. 't#' represents a tuple. t.first is the 0th element of the tuple. t.second is the wunth
+In the discussion below, b represents an arrow. The properties and functions of b construct a new arrow (such that b.first is a new arrow, it is not b). 'a' and 'c' represent arrows that are passed as parameters to functions such as _b.then(a)_. 't#' represents a tuple. For example t1.first is the 0th element of the tuple. t1.second is the 1th (wunth?)
 
 ## General Combinators
 
@@ -65,13 +65,13 @@ In the discussion below, b represents an arrow. The properties and functions of 
 
 + .product(a) - _b.product(a)_ in parallel, run b on t1.first and a on t1.second, produces t2[b(t1.first), a(t1.second)]
 
-+ .fan(a) - _b.fan(a)_ in parallel, run b on t1 and a on t1, producing t2[b(t1), a(t1)]. Generally, when fanning, you will want to reduce the results of the fanned arrows to create a new tuple, in most cases _preserving t1.second_: _b.fan(a).then(c)_ where c produces t3[<reduce t2.first.first and t2.second.first>, t2.first.second]
++ .fan(a) - _b.fan(a)_ in parallel, run b on t1 and a on t1, producing t2[b(t1), a(t1)], which is a tuple of tuples. Generally, when fanning, you will want to reduce the results of the fanned arrows to create a new tuple, in most cases _preserving t1.second_: _b.fan(a).then(c)_ where your reducer c produces t3[<reduce t2.first.first and t2.second.first>, t2.first.second]
 
-+ .either(a) - _b.either(a)_ similar to fan in that it runs b on t1 and a on t1, but when first of the arrows completes, the other is cancelled. Produces either t2[b(t1).first, b(t1).second] or t2[a(t1).first, a(t1).second]. Because only one arrow completes, you are unlikely to want to reduce.
++ .either(a) - _b.either(a)_ similar to fan in that it runs b on t1 and a on t1, but when first of the arrows completes, the other is cancelled. Produces either t2[b(t1).first, b(t1).second] or t2[a(t1).first, a(t1).second]. Because only one arrow completes, I don't imagine that you want to reduce.
 
-+ .repeat - _b.repeat_ repeat the arrow b as long as b produces lifta.Repeat(tn). Continue without repeating when lifta.Done(tn) is produced. Loop forever with _b.then(lifta.justRepeatA).repeat_. But if you want your loop to finish, your arrow must produce lifta.Done(tn), which will cause repeat to end and produce tn.
++ .repeat - _b.repeat_ repeat the arrow b as long as b produces lifta.Repeat(tn). Continue without repeating when lifta.Done(tn) is produced. Loop forever with _b.then(lifta.justRepeatA).repeat_. If you want your loop to finish, your arrow must produce lifta.Done(tn), which will cause repeating to end and will proceed with tn.
 
-+ .lor - _b.lor(a, c)_ lor is short for "left or right", which provides branching. if b(t1) produces lifta.Left(t2), run a on t2. If b produces lifta.Right(t2), run c on t2. To branch for error handling, you can simply have your arrow produce an Error and use the _.leftError_ property. Suppose b might produce an Error: _b.leftError.lor(errorHandlerA, normalResultA)_. The Error here will still be produced by this arrow after error handling. When constructing it is typical to cope with Error flowing to downstream arrows by using the _.barrier_ property, which prevents arrows from executing if t is an Error.
++ .lor - _b.lor(a, c)_ lor is short for "left or right", which provides branching. if b(t1) produces lifta.Left(t2), then run a on t2. If b produces lifta.Right(t2), then instead run c on t2. To branch for error handling, you can simply have your arrow produce an Error and use the _.leftError_ property. Suppose b might produce an Error: _b.leftError.lor(errorHandlerA, normalResultA)_. The Error here will still be produced by this arrow after error handling. When constructing it is typical to cope with Error flowing to downstream arrows by using the _.barrier_ property, which prevents arrows from executing if t is an Error.
 
 + .leftError - _b.leftError_ if b(t1) produces t2 that either is an Error or contains an error (t2.first is Error or t2.second is Error), then produce lifta.Left(t2)
 
