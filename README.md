@@ -89,8 +89,8 @@ In the discussion below, b represents an arrow. The properties and functions of 
 
 + .not - _b.not_ logical not of b(t1).first, while b(t1).second is preserved. proceed with t2[!b(t1).first, b(t1).second]
 
-+ .true(a) - _b.true(a)_ run b(t1) and produce t2. if t2.first === true, run a(t2), producing t3. if t2.first is !== true, produce t2.
++ .true(a) - _b.true(a)_ run b(t1) and produce t2. if t2.first === true, run a(t2), producing t3. if t2.first !== true, produce t2.
 
-+ .false(a) - _b.false(a)_ run b(t1) and produce t2. if t2.first === false, run a(t2), producing t3. if t2.first is !== false, produce t2.
++ .false(a) - _b.false(a)_ run b(t1) and produce t2. if t2.first === false, run a(t2), producing t3. if t2.first !== false, produce t2.
 
 + .falseError - _b.falseError_ if b(t1) produces t2.first === false then produce [Error, t2.second]
