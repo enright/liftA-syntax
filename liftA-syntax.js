@@ -21,9 +21,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-/*
-dot syntax on functions to support a fluent style of arrow composition
-*/
 (function () {
   "use strict"; // enables proper tail calls (PTC)
   let lifta = require('lifta');

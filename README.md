@@ -9,7 +9,23 @@ The "lifta" package of high-order functions (combinators) provides the underlyin
 Examples of asynchronous arrow construction with lifta-syntax:
 
 ```javascript
-  // an arrow that will get the user from the dynamo db
+  // dynamo asynchronous arrows
+  let dyna = require('lifta-dynamo');
+
+  // create dynamo parameter for getting a user by id
+  function setUserReqParams(x) {
+    let second = x.second;
+    return [{
+      TableName: second.userTableName,
+      Key: {
+        id: {
+          S: second.userid
+        }
+      }
+    }, second];
+  }
+
+  // an arrow that will get the user from the dynamo db ()
   let getDynamoUser = setUserReqParams.then(dyna.getItemA.first);
 
   // an arrow to get user and read html in parallel and combine the outputs
