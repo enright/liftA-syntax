@@ -2,7 +2,7 @@
 
 There are a number of packages/repos related to liftA. This repository provides the fluent syntax  that I believe improves clarity when constructing asynchronous arrows. To accomplish this, it adds a significant number of properties and functions to Function.prototype.
 
-The "lifta" package of high-order functions (combinators) provides the underlying construction. Note that "lifta-syntax" itself requires the "lifta" package. There is no need to require both.
+The "lifta" package of high-order functions (combinators) provides the underlying construction. Note that "lifta-syntax" itself requires the "lifta" package. If you are requiring lifta-syntax, there is no need to separately require lifta.
 
 ## Examples of asynchronous arrow construction with lifta-syntax:
 
@@ -53,17 +53,17 @@ Combining functions (like setUserReqParams) and arrows (like dyna.getItemA) into
 
 We start running an arrow with a _tuple_. A general practice is to use the second of the tuple as contextual information for the arrow and let the context flow through the computation, typically adding to the context, sometimes modifying it. See lifta-thumbnail for examples from a working web service.
 
-In the discussion below, b represents an arrow. The properties and functions of b construct a new arrow (such that b.first is a new arrow, it is not b). 'a' and 'c' represent arrows that are passed as parameters to functions such as _b.then(a)_. 't#' represents a tuple. For example t1.first is the 0th element of the tuple. t1.second is the 1th (wunth?)
+In the descriptions below, b represents an arrow. The properties and functions of b construct a new arrow (such that b.first is a new arrow, it is not b). 'a' and 'c' represent arrows that are passed as parameters to functions such as _b.then(a)_. 't#' represents a tuple. For example t1.first is the [0] element of the tuple. t1.second is the [1] (wunth?)
 
 ## General Combinators
 
 + .then(a) - _b.then(a)_ run b(t1) to produce t2, then run a(t2) to produce t3.
 
-+ .first - _b.first_ constructs an arrow from b to operate on only t1.first (t1.second is preserved), the new arrow produces t2[b(t1.first), t1.second]
++ .first - _b.first_ constructs an arrow from b to operate on only t1.first (t1.second is preserved), the new arrow produces t2[b(t1.first), t1.second]. Note that this implies that b in this case does not take in or produce a tuple! Please see "Function of x, Returning x" below.
 
 + .second - _b.second_ constructs an arrow from b to operate on only t1.second (t1.first is preserved), new arrow produces t2[t1.first, b(t1.second)]
 
-+ .product(a) - _b.product(a)_ in parallel, run b on t1.first and a on t1.second, produces t2[b(t1.first), a(t1.second)]
++ .product(a) - _b.product(a)_ in parallel, run b on t1.first and a on t1.second, produces t2[b(t1.first), a(t1.second)].
 
 + .fan(a) - _b.fan(a)_ in parallel, run b on t1 and a on t1, producing t2[b(t1), a(t1)], which is a tuple of tuples. Generally, when fanning, you will want to reduce the results of the fanned arrows to create a new tuple, in most cases _preserving t1.second_. For example _b.fan(a).then(c)_ where your reducer c produces t3[\<reduce t2.first.first and t2.second.first\>, t2.first.second]
 
@@ -94,3 +94,68 @@ In the discussion below, b represents an arrow. The properties and functions of 
 + .false(a) - _b.false(a)_ run b(t1) and produce t2. if t2.first === false, run a(t2), producing t3. if t2.first !== false, produce t2.
 
 + .falseError - _b.falseError_ if b(t1) produces t2.first === false then produce [Error, t2.second]
+
+## Functions of x Returning x
+
+These properties and functions have been added to Function.prototype so that they can be used to automatically "lift" functions into arrows. For arrows that are not asynchronous, you can simply write functions that take tuples and _return tuples_, or that take a value and _return a value_, and compose them along with asynchronous arrows such as those found in lifta-dynamo or lifta-s3.
+
+This makes your functions very simple and very _testable_.
+
+We saw this "lift" in the source code above when we take the setUserReqParams(x) function and simply combine it with _.then(a)_. Here are the bits from that example:
+
+```javascript
+  // create dynamo query parameter for getting a user by id
+  // we are setting up the first of the tuple from information in the second
+  function setUserReqParams(x) {
+    let second = x.second;
+    return [{
+      TableName: second.userTableName,
+      Key: {
+        id: {
+          S: second.userid
+        }
+      }
+    }, second];
+  }
+
+  let getDynamoUser = setUserReqParams.then(dyna.getItemA.first);
+```
+
+We call setUserReqParams() above a "tuple-aware" function because it "knows about" the tuple nature of x (it uses x.second). Notice that it is a "function of x returning x", because it receives a value (in this case a tuple) and returns a value (also a tuple). Also note that it maintains the context - the second of the tuple. These are not difficult to write, and they are easy to test, but life could be simpler.
+
+We can easily imagine another scenario where perhaps the first of the tuple _contains all the information that setUserReqParams needs_. In this case we can write a "function of x returning x" that operates on a single value, not a tuple, and returns a single value, not a tuple. And we can use the _.first_ combinator along with this simpler function.
+
+```javascript
+  // a simple setUserReqParams
+  // incoming x is a simple data object containing the data we need to set up the query
+  // we don't need to know anything about tuples
+  // we produce the query object and return it
+  function setUserReqParams(x) {
+    // return the query object
+    return {
+      TableName: x.userTableName,
+      Key: {
+        id: {
+          S: x.userid
+        }
+      }
+    };
+  }
+
+  // notice that 'first' is applied to the complete arrow
+  // so setUserReqParams only receives t.first
+  let getDynamoUser = setUserReqParams.then(dyna.getItemA).first;
+
+  getDynamoUser.run([{
+    userTableName: "user-table",
+    userid: "dave@daveco.co"
+  }, { context: "all the other context" }]);
+```
+
+The properties and functions added to Function.prototype recognize when a function has an arity of 1 (has one parameter). When you use a combinator, a special property is added to your function that is a "lifted" arrow version of your function. It has the arrow signature. The combinators use this lifted version.
+
+Writing _functions of x returning x_ that deal with values, not tuples, lets you write and test much simpler code that can combine into powerful, complex arrows. But it is typical to need to move data from context (t.second) to data (t.first) - and vice versa - at various points. You need to understand both tuple-aware and single-value forms.
+
+## Writing Your Own Arrows and Using Combinators
+
+When you need to write an asynchronous arrow, you simply use the three-parameter signature of an arrow: a(t, cont, p). When your asynchronous work completes, you call cont(t2, p). If you follow this pattern, _all of the combinators will work_.
