@@ -79,18 +79,18 @@ In the discussion below, b represents an arrow. The properties and functions of 
 
 ## Run
 
-+ .run - _b.run(t)_ run an arrow with initial tuple [first, second]
++ .run - _b.run(t)_ run an arrow with initial tuple t[first, second]. This is a convenience method. You can run an arrow by simply calling it with the correct parameters: a(t, cont, p). t is the initial tuple. cont is a function (t, p) which will receive the produced tuple and the canceller. A simple do-nothing continuation is () => {}. p is required and is created with lifta.P().
 
 ## Boolean Combinators
 
-+ .and(a) - _b.and(a)_ logical and of b.first and a.first, b.second is preserved
++ .and(a) - _b.and(a)_ fan b and a over t1 and reduce with logical and. proceed with t2[b(t1).first && a(t1).first, b(t1).second]
 
-+ .or(a) - _b.or(a)_ logical or of b.first and a.first, b.second is preserved
++ .or(a) - _b.or(a)_ fan b and a over t1 and reduce with logical or. proceed with t2[b(t1).first || a(t1).first, b(t1).second]
 
-+ .not - _b.not_ logical not of b.first, b.second is preserved
++ .not - _b.not_ logical not of b(t1).first, while b(t1).second is preserved. proceed with t2[!b(t1).first, b(t1).second]
 
-+ .true(a) - _b.true(a)_ if b produces first === true, run a, otherwise nothing
++ .true(a) - _b.true(a)_ run b(t1) and produce t2. if t2.first === true, run a(t2), producing t3. if t2.first is !== true, produce t2.
 
-+ .false(a) - _b.false(a)_ if b produces first === false, run a, otherwise nothing
++ .false(a) - _b.false(a)_ run b(t1) and produce t2. if t2.first === false, run a(t2), producing t3. if t2.first is !== false, produce t2.
 
-+ .falseError - _b.falseError_ if b produces first === false then produce an Error
++ .falseError - _b.falseError_ if b(t1) produces t2.first === false then produce [Error, t2.second]
