@@ -55,27 +55,29 @@ We start running an arrow with a _tuple_. A general practice is to use the secon
 
 ## General Combinators
 
-.then(a) - _b.then(a)_ run b, then run a with results of b
++ .then(a) - _b.then(a)_ run b, then run a with results of b
 
-.first - _b.first_ modifies b to operate on only first (second is preserved), produces [b(first), second]
++ .first - _b.first_ modifies b to operate on only first (second is preserved), produces [b(first), second]
 
-.second - _b.second_ modifies b to operate on only second (first is preserved), produces [first, b(second)]
++ .second - _b.second_ modifies b to operate on only second (first is preserved), produces [first, b(second)]
 
-.product(a) - _b.product(a)_ in parallel, run b on first and a on second, produces [b(first), a(second)]
++ .product(a) - _b.product(a)_ in parallel, run b on first and a on second, produces [b(first), a(second)]
 
-.fan(a) - _b.fan(a)_ in parallel, run b on the tuple and a on the tuple
++ .fan(a) - _b.fan(a)_ in parallel, run b on the tuple and a on the tuple
 
-.either(a) - _b.either(a)_ similar to fan, but when first of the arrows completes, the other is cancelled
++ .either(a) - _b.either(a)_ similar to fan, but when first of the arrows completes, the other is cancelled
 
-.repeat - _b.repeat_ repeat the arrow b until lifta.Done is produced
++ .repeat - _b.repeat_ repeat the arrow b until lifta.Done is produced
 
-.lor - _b.lor(a, c)_ if b produces lifta.Left, a runs. if b produces lifta.Right, c runs
++ .lor - _b.lor(a, c)_ if b produces lifta.Left, a runs. if b produces lifta.Right, c runs
 
-.leftError - _b.leftError_ if b produces Error, then produce lifta.Left
++ .leftError - _b.leftError_ if b produces Error, then produce lifta.Left
 
-.barrier - _b.barrier_ if initial input is Error, then do not execute b
++ .barrier - _b.barrier_ if initial input is Error, then do not execute b
 
-.run - _b.run(t)_ run an arrow with initial tuple [first, second]
+## Run
+
++ .run - _b.run(t)_ run an arrow with initial tuple [first, second]
 
 ## Boolean Combinators
 
