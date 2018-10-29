@@ -9,11 +9,17 @@ The "lifta" package of high-order functions (combinators) provides the underlyin
 Examples of asynchronous arrow construction with lifta-syntax:
 
 ```javascript
+  // fluent syntax
   let lifta = require('lifta-syntax');
   // dynamo asynchronous arrows
-  let dyna = require('lifta-dynamo');
+  let dyna = require('lifta-dynamo')({
+		"accessKeyId": "NOTHISISNOTREALLYANID",
+		"secretAccessKey": "n0+7h15+15+n07+r3411y+4n+4cc355+k3y/K3Y",
+		"region": "us-west-1"
+	});
 
-  // create dynamo parameter for getting a user by id
+  // create dynamo query parameter for getting a user by id
+  // we are setting up the first of the tuple from information in the second
   function setUserReqParams(x) {
     let second = x.second;
     return [{
@@ -26,7 +32,9 @@ Examples of asynchronous arrow construction with lifta-syntax:
     }, second];
   }
 
-  // an arrow that will get the user from the dynamo db ()
+  // create an arrow that will get the user from the dynamo db
+  // note that dyna.getItemA acts on the first of the tuple only
+  // it only needs the query (first), not the context (second)
   let getDynamoUser = setUserReqParams.then(dyna.getItemA.first);
 
   // continue combining
@@ -43,6 +51,6 @@ Examples of asynchronous arrow construction with lifta-syntax:
 
 Some things to note about the code above:
 
-Combining functions (like setUserReqParams) and arrows (like dyna.getItemA) into arrows is a process of construction. Arrows don't _run_ until you tell them to _run_. We can easily combine into rather complex parallelized, branching, and repeating structures. Clarity is gained when easily understood arrows are combined together.
+Combining functions (like setUserReqParams) and arrows (like dyna.getItemA) into arrows is a _process of construction_. Arrows don't _run_ until you tell them to _run_. We can easily combine into rather complex parallelized, branching, and repeating structures. Clarity is gained when easily understood arrows are combined together.
 
 We start running an arrow with a _tuple_. A general practice is to use the second of the tuple as contextual information for the arrow and let the context flow through the computation, typically adding to the context, sometimes modifying it. See lifta-thumbnail for examples from a working web service.
