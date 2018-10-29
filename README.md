@@ -75,22 +75,22 @@ LiftA Syntax
 
 .leftError - _b.leftError_ if b produces Error, then produce lifta.Left
 
-.barrier - _b.barrier_ if initial input is Error, then do not execute
+.barrier - _b.barrier_ if initial input is Error, then do not execute b
 
 .run - _b.run_ run an arrow with initial tuple
 
 Boolean combinators using first (ignores second)
 
-.and
+.and(a) - _b.and(a)_ logical and of b.first and a.first, b.second is preserved
 
-.or
+.or(a) - _b.or(a)_ logical or of b.first and a.first, b.second is preserved
 
-.not
+.not - _b.not_ logical not of b.first, b.second is preserved
 
 Conditional boolean combinators
 
-.true(a) - if first is true, run a
+.true(a) - _b.true(a)_ if b produces first === true, run a, otherwise nothing
 
-.false(a) - if first if false, run a
+.false(a) - _b.false(a)_ if b produces first === false, run a, otherwise nothing
 
 .falseError - _b.falseError_ if b produces first === false then produce an Error
