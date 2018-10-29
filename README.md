@@ -1,12 +1,12 @@
 ![lifta image](https://s3-us-west-1.amazonaws.com/bill-enright-personal/Asset+5.svg)
 
-lifta-syntax
+#lifta-syntax
 
 There are a number of packages/repos related to liftA. This repository provides the fluent syntax  that I believe improves clarity when constructing asynchronous arrows. To accomplish this, it adds a significant number of properties and functions to Function.prototype.
 
 The "lifta" package of high-order functions (combinators) provides the underlying construction. Note that "lifta-syntax" itself requires the "lifta" package. There is no need to require both.
 
-Examples of asynchronous arrow construction with lifta-syntax:
+##Examples of asynchronous arrow construction with lifta-syntax:
 
 ```javascript
   // fluent syntax
@@ -49,13 +49,13 @@ Examples of asynchronous arrow construction with lifta-syntax:
   }]);
 ```
 
-Some things to note about the code above:
+##Some things to note about the code above:
 
 Combining functions (like setUserReqParams) and arrows (like dyna.getItemA) into arrows is a _process of construction_. Arrows don't _run_ until you tell them to _run_. We can easily combine into rather complex parallelized, branching, and repeating structures. Clarity is gained when easily understood arrows are combined together.
 
 We start running an arrow with a _tuple_. A general practice is to use the second of the tuple as contextual information for the arrow and let the context flow through the computation, typically adding to the context, sometimes modifying it. See lifta-thumbnail for examples from a working web service.
 
-LiftA Syntax
+##General Combinators
 
 .then(a) - _b.then(a)_ run b, then run a with results of b
 
@@ -77,17 +77,15 @@ LiftA Syntax
 
 .barrier - _b.barrier_ if initial input is Error, then do not execute b
 
-.run - _b.run_ run an arrow with initial tuple
+.run - _b.run(t)_ run an arrow with initial tuple [first, second]
 
-Boolean combinators using first (ignores second)
+##Boolean Combinators
 
 .and(a) - _b.and(a)_ logical and of b.first and a.first, b.second is preserved
 
 .or(a) - _b.or(a)_ logical or of b.first and a.first, b.second is preserved
 
 .not - _b.not_ logical not of b.first, b.second is preserved
-
-Conditional boolean combinators
 
 .true(a) - _b.true(a)_ if b produces first === true, run a, otherwise nothing
 
