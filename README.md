@@ -53,27 +53,29 @@ Combining functions (like setUserReqParams) and arrows (like dyna.getItemA) into
 
 We start running an arrow with a _tuple_. A general practice is to use the second of the tuple as contextual information for the arrow and let the context flow through the computation, typically adding to the context, sometimes modifying it. See lifta-thumbnail for examples from a working web service.
 
+In the discussion below, b represents an arrow. The properties and functions of b construct a new arrow (such that b.first is a new arrow, it is not b). 'a' and 'c' represent arrows that are passed as parameters to functions such as _b.then(a)_. 't#' represents a tuple. t.first is the 0th element of the tuple. t.second is the wunth
+
 ## General Combinators
 
-+ .then(a) - _b.then(a)_ run b, then run a with results of b
++ .then(a) - _b.then(a)_ run b(t1) to produce t2, then run a(t2) to produce t3.
 
-+ .first - _b.first_ modifies b to operate on only first (second is preserved), produces [b(first), second]
++ .first - _b.first_ constructs an arrow from b to operate on only t1.first (t1.second is preserved), the new arrow produces t2[b(t1.first), t1.second]
 
-+ .second - _b.second_ modifies b to operate on only second (first is preserved), produces [first, b(second)]
++ .second - _b.second_ constructs an arrow from b to operate on only t1.second (t1.first is preserved), new arrow produces t2[t1.first, b(t1.second)]
 
-+ .product(a) - _b.product(a)_ in parallel, run b on first and a on second, produces [b(first), a(second)]
++ .product(a) - _b.product(a)_ in parallel, run b on t1.first and a on t1.second, produces t2[b(t1.first), a(t1.second)]
 
-+ .fan(a) - _b.fan(a)_ in parallel, run b on the tuple and a on the tuple
++ .fan(a) - _b.fan(a)_ in parallel, run b on t1 and a on t1, producing t2[b(t1), a(t1)]. Generally, when fanning, you will want to reduce the results of the fanned arrows to create a new tuple, in most cases preserving t1.second: _b.fan(a).then(c)_ where c produces t3[<reduce b(t1).first and a(t1).first>, b(t1).second]
 
-+ .either(a) - _b.either(a)_ similar to fan, but when first of the arrows completes, the other is cancelled
++ .either(a) - _b.either(a)_ similar to fan in that it runs b on t1 and a on t1, but when first of the arrows completes, the other is cancelled. Produces either t2[b(t1).first, b(t1).second] or t2[a(t1).first, a(t1).second]. Because only one arrow completes, you are unlikely to want to reduce.
 
 + .repeat - _b.repeat_ repeat the arrow b as long as b produces lifta.Repeat. Continue without repeating when lifta.Done is produced
 
-+ .lor - _b.lor(a, c)_ if b produces lifta.Left, a runs. if b produces lifta.Right, c runs
++ .lor - _b.lor(a, c)_ lor is short for "left or right", which provides branching. if b produces lifta.Left, run a on b(t1). If b produces lifta.Right, run c on b(t1)
 
 + .leftError - _b.leftError_ if b produces Error, then produce lifta.Left
 
-+ .barrier - _b.barrier_ if initial input is Error, then do not execute b
++ .barrier - _b.barrier_ if initial input t1 is an Error, then do not execute b
 
 ## Run
 
