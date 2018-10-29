@@ -65,7 +65,7 @@ In the discussion below, b represents an arrow. The properties and functions of 
 
 + .product(a) - _b.product(a)_ in parallel, run b on t1.first and a on t1.second, produces t2[b(t1.first), a(t1.second)]
 
-+ .fan(a) - _b.fan(a)_ in parallel, run b on t1 and a on t1, producing t2[b(t1), a(t1)]. Generally, when fanning, you will want to reduce the results of the fanned arrows to create a new tuple, in most cases preserving t1.second: _b.fan(a).then(c)_ where c produces t3[<reduce b(t1).first and a(t1).first>, b(t1).second]
++ .fan(a) - _b.fan(a)_ in parallel, run b on t1 and a on t1, producing t2[b(t1), a(t1)]. Generally, when fanning, you will want to reduce the results of the fanned arrows to create a new tuple, in most cases _preserving t1.second_: _b.fan(a).then(c)_ where c produces t3[<reduce t2.first.first and t2.second.first>, t2.first.second]
 
 + .either(a) - _b.either(a)_ similar to fan in that it runs b on t1 and a on t1, but when first of the arrows completes, the other is cancelled. Produces either t2[b(t1).first, b(t1).second] or t2[a(t1).first, a(t1).second]. Because only one arrow completes, you are unlikely to want to reduce.
 
