@@ -54,3 +54,30 @@ Some things to note about the code above:
 Combining functions (like setUserReqParams) and arrows (like dyna.getItemA) into arrows is a _process of construction_. Arrows don't _run_ until you tell them to _run_. We can easily combine into rather complex parallelized, branching, and repeating structures. Clarity is gained when easily understood arrows are combined together.
 
 We start running an arrow with a _tuple_. A general practice is to use the second of the tuple as contextual information for the arrow and let the context flow through the computation, typically adding to the context, sometimes modifying it. See lifta-thumbnail for examples from a working web service.
+
+LiftA Syntax
+
+.then(a) - _b.then(a)_ run b, then run a with results of b
+.first - _b.first_ modifies b to operate on only first (second is preserved), produces [b(first), second]
+.second - _b.second_ modifies b to operate on only second (first is preserved), produces [first, b(second)]
+.product(a) - _b.product(a)_ in parallel, run b on first and a on second, produces [b(first), a(second)]
+.fan(a) - _b.fan(a)_ in parallel, run b on the tuple and a on the tuple
+.either(a) - _b.either(a)_ similar to fan, but when first of the arrows completes, the other is cancelled
+
+.repeat - _b.repeat_ repeat the arrow b until lifta.Done is produced
+.lor - _b.lor(a, c)_ if b produces lifta.Left, a runs. if b produces lifta.Right, c runs.
+.leftError - _b.leftError_ if b produces Error, then produce lifta.Left
+.barrier - _b.barrier_ if initial input is Error, then do not execute
+
+.run - _b.run_ run an arrow with initial tuple
+
+Boolean combinators using first (ignores second)
+.and
+.or
+.not
+
+Conditional boolean combinators
+.true(a) - if first is true, run a
+.false(a) - if first if false, run a
+
+.falseError - _b.falseError_ if b produces first === false then produce an Error
