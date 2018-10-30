@@ -159,3 +159,35 @@ Writing _functions of x returning x_ that deal with values, not tuples, lets you
 ## Writing Your Own Arrows and Using Combinators
 
 When you need to write an asynchronous arrow, you simply use the three-parameter signature of an arrow: a(t, cont, p). When your asynchronous work completes, you call cont(t2, p). If you follow this pattern, _all of the combinators will work_.
+
+It is not overly complicated to convert Node.js "errorback" methods to arrows, and their is significant benefit to using combinators with converted "errorbacks": _callback hell disappears_. Here is a converted fs.readFile.
+
++ We've created a new arrow readFileA
++ Note the arrow signature (x, cont, p).
++ Note that a canceller is added to p
++ Look at the provided errorback (err, data) passed to fs.readFile.
++ "cont" is what "continues" moving data through the arrow.
++ When the callback completes we check for cancelled and do nothing if cancelled.
++ If the error back produces an Error, we continue with it.
++ Otherwise we continue with the data.
+
+```javascript
+    let readFileA = (x, cont, p) => {
+      let cancelled = false;
+      let cancelId;
+      fs.readFile(x, (err, data) => {
+        // if not cancelled, advance and continue
+        if (!cancelled) {
+          p.advance(cancelId);
+          if (err) {
+            err.x = x;
+            return cont(err, p);
+          } else {
+            return cont(data, p);
+          }
+        }
+      });
+      cancelId = p.add(() => cancelled = true);
+      return p;
+    };
+```
