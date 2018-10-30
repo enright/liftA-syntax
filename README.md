@@ -152,7 +152,7 @@ getDynamoUser.run([{
 }, { context: "all the other context" }]);
 ```
 
-The properties and functions added to Function.prototype recognize when a function has an arity of 1 (has one parameter). When you use a combinator, a special property is added to your function that is a "lifted" arrow version of your function. It has the arrow signature. The combinators use this lifted version.
+The properties and functions added to Function.prototype recognize when a function has an arity of 1 (has one parameter). When you use a combinator, a special property is added to your function that is a "lifted" arrow version of your function. It has the arrow signature. The combinators use this lifted version. If you use the combinators on one-parameter functions that take a tuple but that do not return a tuple, things will not work well. If you use the combinators on one-parameter functions that do not return anything, you will get undefined, which probably will not work well. Please write code carefully and unit test your functions.
 
 Writing _functions of x returning x_ that deal with values, not tuples, lets you write and test much simpler code that can combine into powerful, complex arrows. But it is typical to need to move data from context (t.second) to data (t.first) - and vice versa - at various points. You need to understand both tuple-aware and single-value forms.
 
@@ -222,7 +222,10 @@ function dynamoErrorBack(method) {
 }
 ```
 
+Your own arrows will have a signature of (x, cont, p). The combinators added to Function.prototype recognize when a function has an arity of 3 and assume the function is already an arrow and does not need to be transformed. If you use the combinators with a 3-parameter function that is not an arrow, you will get surprising results. So please don't do it.
+
 ## TL; DR
+
 Did you scroll to the bottom? Regardless, thank you.
 
 lifta-thumbnail has significant examples of using "functions of x returning x", home-brewed arrows (one for exec'ing phantomjs), and dynamodb usage.
