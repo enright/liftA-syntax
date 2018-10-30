@@ -7,44 +7,44 @@ The "lifta" package of high-order functions (combinators) provides the underlyin
 ## Examples of asynchronous arrow construction with lifta-syntax:
 
 ```javascript
-  // fluent syntax
-  let lifta = require('lifta-syntax');
-  // dynamo asynchronous arrows
-  let dyna = require('lifta-dynamo')({
-		"accessKeyId": "NOTHISISNOTREALLYANID",
-		"secretAccessKey": "n0+7h15+15+n07+r3411y+4n+4cc355+k3y/K3Y",
-		"region": "us-west-1"
-	});
+// fluent syntax
+let lifta = require('lifta-syntax');
+// dynamo asynchronous arrows
+let dyna = require('lifta-dynamo')({
+	"accessKeyId": "NOTHISISNOTREALLYANID",
+	"secretAccessKey": "n0+7h15+15+n07+r3411y+4n+4cc355+k3y/K3Y",
+	"region": "us-west-1"
+});
 
-  // create dynamo query parameter for getting a user by id
-  // we are setting up the first of the tuple from information in the second
-  function setUserReqParams(x) {
-    let second = x.second;
-    return [{
-      TableName: second.userTableName,
-      Key: {
-        id: {
-          S: second.userid
-        }
+// create dynamo query parameter for getting a user by id
+// we are setting up the first of the tuple from information in the second
+function setUserReqParams(x) {
+  let second = x.second;
+  return [{
+    TableName: second.userTableName,
+    Key: {
+      id: {
+        S: second.userid
       }
-    }, second];
-  }
+    }
+  }, second];
+}
 
-  // create an arrow that will get the user from the dynamo db
-  // note that dyna.getItemA acts on the first of the tuple only
-  // it only needs the query (first), not the context (second)
-  let getDynamoUser = setUserReqParams.then(dyna.getItemA.first);
+// create an arrow that will get the user from the dynamo db
+// note that dyna.getItemA acts on the first of the tuple only
+// it only needs the query (first), not the context (second)
+let getDynamoUser = setUserReqParams.then(dyna.getItemA.first);
 
-  // continue combining
-  // create an arrow to get user and read html in parallel and combine the outputs
-  let getUserAndHTML = getDynamoUser.fan(readHTML).then(combineUserAndHTML);
+// continue combining
+// create an arrow to get user and read html in parallel and combine the outputs
+let getUserAndHTML = getDynamoUser.fan(readHTML).then(combineUserAndHTML);
 
-  // run (p.cancelAll() allows for arrow 'in-flight'  cancellation)
-  let p = getUserAndHTML.run([undefined, {
-    userTableName: "user-table",
-    userid: "dave@daveco.co",
-    htmlFile: "yourPage.html"
-  }]);
+// run (p.cancelAll() allows for arrow 'in-flight'  cancellation)
+let p = getUserAndHTML.run([undefined, {
+  userTableName: "user-table",
+  userid: "dave@daveco.co",
+  htmlFile: "yourPage.html"
+}]);
 ```
 
 ## Some things to note about the code above:
@@ -104,21 +104,21 @@ This makes your functions very simple and very _testable_.
 We saw this "lift" in the source code above when we take the setUserReqParams(x) function and simply combine it with _.then(a)_. Here are the bits from that example:
 
 ```javascript
-  // create dynamo query parameter for getting a user by id
-  // we are setting up the first of the tuple from information in the second
-  function setUserReqParams(x) {
-    let second = x.second;
-    return [{
-      TableName: second.userTableName,
-      Key: {
-        id: {
-          S: second.userid
-        }
+// create dynamo query parameter for getting a user by id
+// we are setting up the first of the tuple from information in the second
+function setUserReqParams(x) {
+  let second = x.second;
+  return [{
+    TableName: second.userTableName,
+    Key: {
+      id: {
+        S: second.userid
       }
-    }, second];
-  }
+    }
+  }, second];
+}
 
-  let getDynamoUser = setUserReqParams.then(dyna.getItemA.first);
+let getDynamoUser = setUserReqParams.then(dyna.getItemA.first);
 ```
 
 We call setUserReqParams() above a "tuple-aware" function because it "knows about" the tuple nature of x (it uses x.second). Notice that it is a "function of x returning x", because it receives a value (in this case a tuple) and returns a value (also a tuple). Also note that it maintains the context - the second of the tuple. These are not difficult to write, and they are easy to test, but life could be simpler.
@@ -126,30 +126,30 @@ We call setUserReqParams() above a "tuple-aware" function because it "knows abou
 We can easily imagine another scenario where perhaps the first of the tuple _contains all the information that setUserReqParams needs_. In this case we can write a "function of x returning x" that operates on a single value, not a tuple, and returns a single value, not a tuple. And we can use the _.first_ combinator along with this simpler function.
 
 ```javascript
-  // a simple setUserReqParams
-  // incoming x is a simple data object containing the data we need to set up the query
-  // we don't need to know anything about tuples
-  // we produce the query object and return it
-  function setUserReqParams(x) {
-    // return the query object
-    return {
-      TableName: x.userTableName,
-      Key: {
-        id: {
-          S: x.userid
-        }
+// a simple setUserReqParams
+// incoming x is a simple data object containing the data we need to set up the query
+// we don't need to know anything about tuples
+// we produce the query object and return it
+function setUserReqParams(x) {
+  // return the query object
+  return {
+    TableName: x.userTableName,
+    Key: {
+      id: {
+        S: x.userid
       }
-    };
-  }
+    }
+  };
+}
 
-  // notice that 'first' is applied to the complete arrow
-  // so setUserReqParams only receives t.first
-  let getDynamoUser = setUserReqParams.then(dyna.getItemA).first;
+// notice that 'first' is applied to the complete arrow
+// so setUserReqParams only receives t.first
+let getDynamoUser = setUserReqParams.then(dyna.getItemA).first;
 
-  getDynamoUser.run([{
-    userTableName: "user-table",
-    userid: "dave@daveco.co"
-  }, { context: "all the other context" }]);
+getDynamoUser.run([{
+  userTableName: "user-table",
+  userid: "dave@daveco.co"
+}, { context: "all the other context" }]);
 ```
 
 The properties and functions added to Function.prototype recognize when a function has an arity of 1 (has one parameter). When you use a combinator, a special property is added to your function that is a "lifted" arrow version of your function. It has the arrow signature. The combinators use this lifted version.
@@ -168,26 +168,56 @@ It is not overly complicated to convert Node.js "errorback" methods to arrows, a
 + Look at the provided errorback (err, data) passed to fs.readFile.
 + "cont" is what "continues" moving data through the arrow.
 + When the callback completes we check for cancelled and do nothing if cancelled.
-+ If the error back produces an Error, we continue with it.
++ If the error back produces an Error, we simply continue with it (we have the tools, like _.leftError_ to handle errors strategically when we combine arrows)
 + Otherwise we continue with the data.
 
 ```javascript
-    let readFileA = (x, cont, p) => {
-      let cancelled = false;
-      let cancelId;
-      fs.readFile(x, (err, data) => {
-        // if not cancelled, advance and continue
-        if (!cancelled) {
-          p.advance(cancelId);
-          if (err) {
-            err.x = x;
-            return cont(err, p);
-          } else {
-            return cont(data, p);
-          }
-        }
-      });
-      cancelId = p.add(() => cancelled = true);
-      return p;
-    };
+let readFileA = (x, cont, p) => {
+  let cancelled = false;
+  let cancelId;
+  fs.readFile(x, (err, data) => {
+    // if not cancelled, advance and continue
+    if (!cancelled) {
+      p.advance(cancelId);
+      if (err) {
+        err.x = x;
+        return cont(err, p);
+      } else {
+        return cont(data, p);
+      }
+    }
+  });
+  cancelId = p.add(() => cancelled = true);
+  return p;
+};
+```
+
+For many libraries, it is possible to write some simple transformation functions to convert the entire API to an arrow form. For example here is a function "dynamoErrorBack" that converts most of the dynamoDB API calls into arrows. The method parameter is the name of the api call such as "batchGetItem". The "dynamo" variable is a configured dynamo instance. This can be found in lifta-dynamodb.
+
++ dynamoErrorBack returns a function with the arrow signature (x, cont, p) for the specified method
++ The arrow uses x as the request object and calls dynamo[method] (so use _.first_ when combining)
++ The SDK's req.abort feature is incorporated into the canceller
++ The callback will continue the arrow with an Error or with data
+
+```javascript
+let cb = (x, cont, p, advance, err, data) => {
+  if (err) {
+    err.x = x;
+    x = err;
+  } else {
+    x = data;
+  }
+  advance();
+  cont(x, p);
+};
+
+function dynamoErrorBack(method) {
+  return function (x, cont, p) {
+    let cancelId;
+    let advance = () => p.advance(cancelId);
+    let req = dynamo[method](x, cb.bind(undefined, x, cont, p, advance));
+    cancelId = p.add(() => req.abort());
+    return cancelId;
+  };
+}
 ```
