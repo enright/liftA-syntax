@@ -97,7 +97,7 @@ In the descriptions below, b represents an arrow. The properties and functions o
 
 ## Functions of x Returning x
 
-These properties and functions have been added to Function.prototype so that they can be used to automatically "lift" functions into arrows. For arrows that are not asynchronous, you can simply write functions that take tuples and _return tuples_, or that take a value and _return a value_, and compose them along with asynchronous arrows such as those found in lifta-dynamo or lifta-s3.
+These properties and functions have been added to Function.prototype so that they can be used to automatically "lift" functions into arrows. For arrows that are not asynchronous, you can simply write functions that take tuples and _return tuples_, or that take a value and _return a value_, and compose them along with asynchronous arrows such as those found in lifta-dynamodb or lifta-s3.
 
 This makes your functions very simple and very _testable_.
 
@@ -121,7 +121,7 @@ function setUserReqParams(x) {
 let getDynamoUser = setUserReqParams.then(dyna.getItemA.first);
 ```
 
-We call setUserReqParams() above a "tuple-aware" function because it "knows about" the tuple nature of x (it uses x.second). Notice that it is a "function of x returning x", because it receives a value (in this case a tuple) and returns a value (also a tuple). Also note that it maintains the context - the second of the tuple. These are not difficult to write, and they are easy to test, but life could be simpler.
+We call setUserReqParams() above a "tuple-aware" function because it "knows about" the tuple nature of x (it uses x.second and when returning, creates x.first). Notice that it is a "function of x returning x", because it receives a value (in this case a tuple) and returns a value (also a tuple). Also note that it maintains the context - the second of the tuple. These are not difficult to write, and they are easy to test, but life could be simpler.
 
 We can easily imagine another scenario where perhaps the first of the tuple _contains all the information that setUserReqParams needs_. In this case we can write a "function of x returning x" that operates on a single value, not a tuple, and returns a single value, not a tuple. And we can use the _.first_ combinator along with this simpler function.
 
@@ -156,19 +156,19 @@ The properties and functions added to Function.prototype recognize when a functi
 
 Writing _functions of x returning x_ that deal with values, not tuples, lets you write and test much simpler code that can combine into powerful, complex arrows. But it is typical to need to move data from context (t.second) to data (t.first) - and vice versa - at various points. You need to understand both tuple-aware and single-value forms.
 
-## Writing Your Own Arrows and Using Combinators
+## Writing Your Own Arrows
 
-When you need to write an asynchronous arrow, you simply use the three-parameter signature of an arrow: a(t, cont, p). When your asynchronous work completes, you call cont(t2, p). If you follow this pattern, _all of the combinators will work_.
+When you need to write an asynchronous arrow, you simply use the three-parameter signature of an arrow: a(t, cont, p). When your asynchronous work completes, you call cont(t2, p). If you follow this pattern, and make your arrow cancellable, _all of the combinators will work_.
 
-It is not overly complicated to convert Node.js "errorback" methods to arrows, and their is significant benefit to using combinators with converted "errorbacks": _callback hell disappears_. Here is a converted fs.readFile.
+It is not overly complicated to convert Node.js "errorback" methods to arrows, and there is significant benefit to using combinators with converted "errorbacks": _callback hell disappears_. Here is a converted fs.readFile.
 
 + We've created a new arrow readFileA
 + Note the arrow signature (x, cont, p).
-+ Note that a canceller is added to p
++ Note that a simple canceller is added to p
 + Look at the provided errorback (err, data) passed to fs.readFile.
 + "cont" is what "continues" moving data through the arrow.
 + When the callback completes we check for cancelled and do nothing if cancelled.
-+ If the error back produces an Error, we simply continue with it (we have the tools, like _.leftError_ to handle errors strategically when we combine arrows)
++ If the error back produces an Error, we simply continue with it (we have the tools, like _.leftError_ and _.lor_ to handle errors strategically when we combine arrows)
 + Otherwise we continue with the data.
 
 ```javascript
@@ -192,12 +192,12 @@ let readFileA = (x, cont, p) => {
 };
 ```
 
-For many libraries, it is possible to write some simple transformation functions to convert the entire API to an arrow form. For example here is a function "dynamoErrorBack" that converts most of the dynamoDB API calls into arrows. The method parameter is the name of the api call such as "batchGetItem". The "dynamo" variable is a configured dynamo instance. This can be found in lifta-dynamodb.
+For many libraries, it is possible to write some simple transformation functions to convert the entire API to an arrow form. For example here is a function "dynamoErrorBack" that converts many of the dynamoDB API calls into arrows. The method parameter is the name of the api call such as "batchGetItem". The "dynamo" variable is a configured dynamo instance. This can be found in lifta-dynamodb.
 
 + dynamoErrorBack returns a function with the arrow signature (x, cont, p) for the specified method
 + The arrow uses x as the request object and calls dynamo[method] (so use _.first_ when combining)
-+ The SDK's req.abort feature is incorporated into the canceller
-+ The callback will continue the arrow with an Error or with data
++ The SDK's req.abort feature is easily incorporated into the canceller
++ The callback will continue the arrow with an Error or with data (if req not aborted)
 
 ```javascript
 let cb = (x, cont, p, advance, err, data) => {
@@ -221,3 +221,8 @@ function dynamoErrorBack(method) {
   };
 }
 ```
+
+## TL; DR
+Did you scroll to the bottom? Regardless, thank you.
+
+lifta-thumbnail has significant examples of using "functions of x returning x", home-brewed arrows (one for exec'ing phantomjs), and dynamodb usage.
