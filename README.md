@@ -196,7 +196,7 @@ For many libraries, it is possible to write some simple transformation functions
 
 + dynamoErrorBack returns a function with the arrow signature (x, cont, p) for the specified method
 + The arrow uses x as the request object and calls dynamo[method] (so use _.first_ when combining)
-+ The SDK's req.abort feature is easily incorporated into the canceller
++ The SDK's req.abort feature is easily incorporated into the canceller, so if cancelled, the request will abort and the callback is never called.
 + The callback will continue the arrow with an Error or with data (if req not aborted)
 
 ```javascript
