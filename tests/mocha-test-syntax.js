@@ -5,6 +5,7 @@
 let lifta = require('../liftA-syntax.js');
 let expect = require('chai').expect;
 let produce = require('immer').default;
+let lolex = require('lolex');
 
 // is it really kosher to test an implementation detail? no...
 describe('property a', () => {
@@ -61,18 +62,19 @@ describe('then', () => {
       return x;
     };
     let gFunction = (x) => {
-      expect(x.fexec).to.be.true;
+      expect(x.fexec).equal(true);
       x.gexec = true;
       return x;
     };
     let arrow = fFunction.then(gFunction);
     arrow({}, (x) => {
-      expect(x.fexec).to.be.true;
-      expect(x.gexec).to.be.true;
+      expect(x.fexec).equal(true);
+      expect(x.gexec).equal(true);
       done();
     }, lifta.P());
   });
   it('creates an arrow and execs arrow f (this) then arrow g continuing with g(f(x))', (done) => {
+    let clock = lolex.install();
     let fArrow = (x, cont, p) => {
       setTimeout(() => {
         expect(x).to.not.have.property('gexec');
@@ -82,17 +84,19 @@ describe('then', () => {
     };
     let gArrow = (x, cont, p) => {
       setTimeout(() => {
-        expect(x.fexec).to.be.true;
+        expect(x.fexec).equal(true);
         x.gexec = true;
         return cont(x, p);
-      }, 0);
+      }, 1);
     };
     let arrow = fArrow.then(gArrow);
     arrow({}, (x) => {
-      expect(x.fexec).to.be.true;
-      expect(x.gexec).to.be.true;
+      expect(x.fexec).equal(true);
+      expect(x.gexec).equal(true);
+      clock.uninstall();
       done();
     }, lifta.P());
+    clock.runAll();
   });
 });
 
@@ -248,14 +252,15 @@ describe('product', () => {
 });
 
 describe('either', () => {
-  it('creates an arrow and runs arrow f over x and arrow g over x and continues with the first to finish f', (done) => {
+  it('creates an arrow and runs arrow f over x and arrow g over x and continues with the first to finish g', (done) => {
+    let clock = lolex.install();
     let fArrow = (x, cont, p) => {
       let canceller;
       let timeout = setTimeout(() => {
         p.advance(canceller);
         x.fexec = true;
         return cont(x, p);
-      }, 1000);
+      }, 1);
       canceller = p.add(() => clearTimeout(timeout));
     };
     let gArrow = (x, cont, p) => {
@@ -272,10 +277,13 @@ describe('either', () => {
     arrow({}, (x) => {
       expect(x).to.not.have.property('fexec');
       expect(x.gexec).to.equal(true);
+      clock.uninstall();
       done();
     }, lifta.P());
+    clock.runAll();
   });
-  it('creates an arrow and runs arrow f over x and arrow g over x and continues with the first to finish g', (done) => {
+  it('creates an arrow and runs arrow f over x and arrow g over x and continues with the first to finish f', (done) => {
+    let clock = lolex.install();
     let fArrow = (x, cont, p) => {
       let canceller;
       let timeout = setTimeout(() => {
@@ -291,7 +299,7 @@ describe('either', () => {
         p.advance(canceller);
         x.gexec = true;
         return cont(x, p);
-      }, 1000);
+      }, 1);
       canceller = p.add(() => clearTimeout(timeout));
     };
     let arrow = fArrow.either(gArrow);
@@ -299,8 +307,10 @@ describe('either', () => {
     arrow({}, (x) => {
       expect(x).to.not.have.property('gexec');
       expect(x.fexec).to.equal(true);
+      clock.uninstall();
       done();
     }, lifta.P());
+    clock.runAll();
   });
 });
 
@@ -370,35 +380,6 @@ describe('falseError', () => {
     let arrow = fFunction.falseError;
     arrow(undefined, (x) => {
       expect(x[0]).to.be.true;
-      expect(x[1]).to.equal(25);
-      done();
-    }, lifta.P());
-  });
-});
-
-describe('promoteError', () => {
-  it('if x.first is Error promote x.first to x', (done) => {
-    let fFunction = (x) => {
-      let first = Error('ouch');
-      first.x = 32;
-      return [first, 25];
-    };
-    let arrow = fFunction.promoteError;
-    arrow(undefined, (x) => {
-      expect(x).to.be.a('Error');
-      expect(x.x[0]).to.equal(32);
-      expect(x.x[1]).to.equal(25);
-      done();
-    }, lifta.P());
-  });
-  it('if x.first is not Error produce x', (done) => {
-    let fFunction = (x) => {
-      return ['ouch', 25];
-    };
-    let arrow = fFunction.promoteError;
-    arrow(undefined, (x) => {
-      expect(x).to.be.an('array');
-      expect(x[0]).to.equal('ouch');
       expect(x[1]).to.equal(25);
       done();
     }, lifta.P());

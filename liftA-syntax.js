@@ -60,16 +60,6 @@ SOFTWARE.
     }
   });
 
-  function promoteError(x) {
-    let first = x.first;
-    if (first instanceof Error) {
-      first.x = [first.x, x.second];
-      return first;
-    } else {
-      return x;
-    }
-  }
-
   if (!Function.prototype.then) {
     Function.prototype.then = function (g) {
       return lifta.thenA(this.a, g.a);
@@ -112,7 +102,7 @@ SOFTWARE.
 
   if (!Function.prototype.either) {
     Function.prototype.either = function (g) {
-      return lifta.eitherA(this, g);
+      return lifta.eitherA(this.a, g.a);
     };
   }
 
@@ -132,13 +122,6 @@ SOFTWARE.
   Object.defineProperty(Function.prototype, 'falseError', {
     get: function () {
       return this.a.then(lifta.falseErrorA);
-    }
-  });
-
-
-  Object.defineProperty(Function.prototype, 'promoteError', {
-    get: function () {
-      return this.a.then(lifta.promoteErrorA);
     }
   });
 
@@ -165,7 +148,7 @@ SOFTWARE.
       if (!this._barrier) {
         let f = this.a;
         this._barrier = (x, cont, p) => {
-          if (x instanceof Error) {
+          if (xHasError(x)) {
             return cont(x, p);
           } else {
             return f(x, cont, p);
@@ -197,7 +180,9 @@ SOFTWARE.
         return this._not;
       }
     },
-    set: (v) => this._not = v
+    set: function (v) {
+      this._not = v;
+    }
   });
 
   if (!Function.prototype.false) {
@@ -212,7 +197,5 @@ SOFTWARE.
     };
   }
 
-  lifta.fanAndReducePairA = fanAndReducePairA;
-  lifta.promoteErrorA = promoteError.a;
   module.exports = lifta;
 }());
